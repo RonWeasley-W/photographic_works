@@ -1,0 +1,304 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pintereso - Explore Creative Ideas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'plugins/bootstrap-3.4.1/css/bootstrap.min.css' %}">
+    {#    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">#}
+    <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-3.4.1/js/bootstrap.min.js' %}"></script>
+    <style>
+        /* 全局样式 */
+        body {
+            padding-top: 80px;
+            background-color: #f9f9f9;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 10px 0;
+            transition: padding 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            padding: 5px 0;
+        }
+
+        .navbar-brand img {
+            transition: width 0.3s ease;
+        }
+
+        .navbar.scrolled .navbar-brand img {
+            width: 45px;
+        }
+
+        .nav-link {
+            color: #333 !important;
+            font-weight: 600;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #e60023 !important;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-input {
+            background-color: #efefef;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 40px;
+            width: 100%;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            background-color: #e0e0e0;
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #767676;
+        }
+
+        .user-avatar {
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* 分类导航样式 */
+        .category-nav {
+            margin-bottom: 30px;
+        }
+
+        .category-link {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #efefef;
+            border-radius: 30px;
+            color: #333;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .category-link:hover {
+            background-color: #e0e0e0;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+
+        /* 卡片样式 */
+        .card-pin {
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card-pin:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        .card-img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .card-pin:hover .card-img {
+            transform: scale(1.05);
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+        }
+
+        .card-pin:hover .overlay {
+            opacity: 1;
+        }
+
+        .card-title {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .more {
+            background-color: #e60023;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        .more:hover {
+            background-color: #cc001e;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* 响应式布局 */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 5px 0;
+            }
+
+            .navbar-brand img {
+                width: 45px;
+            }
+
+            .search-input {
+                padding: 8px 35px;
+            }
+
+            .card-columns {
+                column-count: 2;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 992px) {
+            .card-columns {
+                column-count: 3;
+            }
+        }
+
+        @media (min-width: 993px) {
+            .card-columns {
+                column-count: 4;
+            }
+        }
+    </style>
+{% block css %}{% endblock %}
+</head>
+<body>
+<!-- 导航栏 -->
+<nav class="navbar navbar-fixed-top">
+    <div>
+        <a class="navbar-brand" href="#">
+            <img src="/static/img/logo.png" class="img-circle" alt="Logo" width="30">
+        </a>
+    </div>
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+
+        <div class="collapse navbar-collapse" id="navbar-collapse">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="search-container">
+                        <span class="search-icon"><i class="fa fa-search"></i></span>
+                        <input type="text" class="search-input" placeholder="Search ideas, topics, or people..." style="margin-top: 20px">
+                    </div>
+                </div>
+                <div class="col-md-1"></div>
+                <div class="nav navbar-nav navbar-right">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="home.html" class="nav-link active" style="margin-top: 15px">Home</a></li>
+                        <li><a href="#" class="nav-link" style="margin-top: 15px">Post</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" style="margin-top: 15px">
+                                <img src="/static/img/author.png" width="30" class="user-avatar" alt="User">
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">Profile</a></li>
+                                <li><a href="#">Settings</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a href="#">Logout</a></li>
+                            </ul>
+                        </li>
+{#                        <li class="dropdown">#}
+{#                            <a href="#" class="nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">#}
+{#                                <svg style="margin-top:10px;" class="_3DJPT" version="1.1" viewBox="0 0 32 32" width="21" height="21" aria-hidden="false"><path d="M7 15.5c0 1.9-1.6 3.5-3.5 3.5s-3.5-1.6-3.5-3.5 1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5zm21.5-3.5c-1.9 0-3.5 1.6-3.5 3.5s1.6 3.5 3.5 3.5 3.5-1.6 3.5-3.5-1.6-3.5-3.5-3.5zm-12.5 0c-1.9 0-3.5 1.6-3.5 3.5s1.6 3.5 3.5 3.5 3.5-1.6 3.5-3.5-1.6-3.5-3.5-3.5z"></path></svg>#}
+{#                            </a>#}
+{#                            <div class="dropdown-menu dropdown-menu-right shadow-lg">#}
+{#                                <h4 class="dropdown-header">Download Pintereso</h4>#}
+{#                                <div class="dropdown-divider"></div>#}
+{#                                <a href="#" class="dropdown-item">#}
+{#                                    <i class="fa fa-download"></i> Download HTML Template#}
+{#                                </a>#}
+{#                            </div>#}
+{#                        </li>#}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div>
+    {% block content %}{% endblock %}
+</div>
+
+<script>
+    // 导航栏滚动效果
+    $(window).scroll(function() {
+        if ($(this).scrollTop() > 10) {
+            $('.navbar').addClass('scrolled');
+        } else {
+            $('.navbar').removeClass('scrolled');
+        }
+    });
+
+    // 卡片懒加载效果
+    document.addEventListener("DOMContentLoaded", function() {
+        const cards = document.querySelectorAll('.card-pin');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        cards.forEach(card => {
+            card.style.opacity = 0;
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+    });
+</script>
+</body>
+</html>
+    
