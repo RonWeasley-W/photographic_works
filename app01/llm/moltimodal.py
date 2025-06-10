@@ -1,7 +1,8 @@
+import io
 import os
 from openai import OpenAI
 import base64
-import json
+from PIL import Image
 
 
 class Qwenv1:
@@ -13,7 +14,8 @@ class Qwenv1:
             api_key=os.getenv("DASHSCOPE_API_KEY"),
             base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
         )
-        self.prompts = [("你是一位摄影作品赏析大师，现在请你根据以下内容进行赏析（对于所有赏析内容提炼为一整段，不需要分段、分行或分点阐述）："
+        self.prompts = [("你是一位摄影作品赏析大师，现在请你根据此摄影作品进行取名，要求作品名称在1字到10字之间，尽量使用中文。"),
+                        ("你是一位摄影作品赏析大师，现在请你根据以下内容进行赏析（对于所有赏析内容提炼为一整段，不需要分段、分行或分点阐述）："
                          "请深入分析图片中的曝光处理技巧，从整体曝光度出发，探讨其是否达到了最佳视觉效果。"
                          "是正常曝光展现了丰富细节，还是通过过曝或欠曝营造出独特氛围？同时，仔细观察光影运用，"
                          "思考光源类型、方向及强度对画面的影响。是柔和的散射光带来细腻过渡，还是强烈直射光形"
@@ -61,24 +63,53 @@ class Qwenv1:
                          "摄影艺术边界的新思考？这种风格与创新是否体现了摄影师对当代社会、文化或技术趋势的敏锐洞察，并以此推动摄影艺术向"
                          "前发展？")]
 
-    def _encode_image(self):
-        """将本地图片编码为Base64格式"""
+    def _encode_image(self, compress=False, max_size=5 * 1024 * 1024):  # 默认最大5MB
+        """将图片编码为Base64，可选择压缩以减小尺寸"""
         try:
-            with open(self.image_path, "rb") as image_file:
-                return base64.b64encode(image_file.read()).decode('utf-8')
+            if not compress:
+                # 不压缩直接读取文件
+                with open(self.image_path, "rb") as image_file:
+                    return base64.b64encode(image_file.read()).decode('utf-8')
+
+            # 压缩图片
+            with Image.open(self.image_path) as img:
+                # 转换为RGB模式以处理PNG等格式
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+
+                # 计算图片大小
+                buffer = io.BytesIO()
+                img.save(buffer, format="JPEG", quality=90)
+                image_size = buffer.tell()
+
+                # 如果图片大小超过限制，则进行压缩
+                quality = 90
+                while image_size > max_size and quality > 10:
+                    quality -= 10
+                    buffer = io.BytesIO()
+                    img.save(buffer, format="JPEG", quality=quality)
+                    image_size = buffer.tell()
+                    print(f"调整图片质量为{quality}%, 当前大小: {image_size / 1024:.2f}KB")
+
+                # 最终编码
+                buffer.seek(0)
+                return base64.b64encode(buffer.read()).decode('utf-8')
+
         except Exception as e:
-            print(f"图片编码错误: {e}")
+            print(f"图片编码或压缩时出错: {e}")
             return None
 
     def analyze_image(self):
         """分析图片内容并返回解析后的模型响应"""
-        response_all = []           # 存放大模型响应输出
-        image_analyze = {'image_exposure': '',
-                         'image_focus': '',
-                         'image_composition': '',
-                         'image_color': '',
-                         'image_narrative': '',
-                         'image_style': '',
+        # 存放大模型响应输出
+        image_analyze = {
+                            'image_name': '',
+                            'image_exposure': '',
+                            'image_focus': '',
+                            'image_composition': '',
+                            'image_color': '',
+                            'image_narrative': '',
+                            'image_style': '',
                         }
         # 检查文件是否存在（针对本地路径）
         if not self.image_path.startswith(('http://', 'https://')):
@@ -97,7 +128,7 @@ class Qwenv1:
             }
         else:
             # 本地图片需要先编码为Base64
-            image_data = self._encode_image()
+            image_data = self._encode_image(compress=True)
             if not image_data:
                 return None
             image_input = {
@@ -121,8 +152,6 @@ class Qwenv1:
                     }
                 ]
 
-                # print(f"发送请求: {prompt_text[:30]}...")  # 打印部分提示文本，用于调试
-
                 # 调用API获取响应
                 response = self.client.chat.completions.create(
                     model="qwen-vl-plus",
@@ -132,6 +161,8 @@ class Qwenv1:
 
                 # 提取响应内容并添加到结果列表
                 image_value = response.choices[0].message.content
+                # 去除换行符
+                image_value = image_value.replace("\n", "")
                 image_analyze[image_key] = image_value
 
             return image_analyze
@@ -148,13 +179,6 @@ if __name__ == "__main__":
     # 示例：使用本地图片
     image_analyzer = Qwenv1("../../media/img/my_img/DSCF9773.jpg")
     result = image_analyzer.analyze_image()
-    print(result)
+    for key in result.keys():
+        print(result[key])
 
-    if result:
-        print("分析结果:")
-        for i, response in enumerate(result):
-            # print(f"\n{['曝光与光影', '对焦与清晰度', '构图分析', '视觉冲击力与美感'][i]}:")
-            # print(response)
-            print()
-    else:
-        print("图片分析失败")
