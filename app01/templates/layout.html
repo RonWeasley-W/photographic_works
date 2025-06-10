@@ -1,4 +1,6 @@
+
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +8,6 @@
     <title>Pintereso - Explore Creative Ideas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'plugins/bootstrap-3.4.1/css/bootstrap.min.css' %}">
-    {#    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">#}
     <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
     <script src="{% static 'plugins/bootstrap-3.4.1/js/bootstrap.min.js' %}"></script>
     <style>
@@ -232,8 +233,8 @@
                 <div class="col-md-1"></div>
                 <div class="nav navbar-nav navbar-right">
                     <ul class="nav navbar-nav navbar-right">
-                        <li><a href="home.html" class="nav-link active" style="margin-top: 15px">Home</a></li>
-                        <li><a href="#" class="nav-link" style="margin-top: 15px">Post</a></li>
+                        <li><a href="http://localhost:8000/photographic/home/" class="nav-link active" style="margin-top: 15px">Home</a></li>
+                        <li><a href="http://localhost:8000/photographic/update/" class="nav-link" style="margin-top: 15px">Update</a></li>
                         <li class="dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" style="margin-top: 15px">
                                 <img src="/static/img/author.png" width="30" class="user-avatar" alt="User">
@@ -245,18 +246,6 @@
                                 <li><a href="#">Logout</a></li>
                             </ul>
                         </li>
-{#                        <li class="dropdown">#}
-{#                            <a href="#" class="nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">#}
-{#                                <svg style="margin-top:10px;" class="_3DJPT" version="1.1" viewBox="0 0 32 32" width="21" height="21" aria-hidden="false"><path d="M7 15.5c0 1.9-1.6 3.5-3.5 3.5s-3.5-1.6-3.5-3.5 1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5zm21.5-3.5c-1.9 0-3.5 1.6-3.5 3.5s1.6 3.5 3.5 3.5 3.5-1.6 3.5-3.5-1.6-3.5-3.5-3.5zm-12.5 0c-1.9 0-3.5 1.6-3.5 3.5s1.6 3.5 3.5 3.5 3.5-1.6 3.5-3.5-1.6-3.5-3.5-3.5z"></path></svg>#}
-{#                            </a>#}
-{#                            <div class="dropdown-menu dropdown-menu-right shadow-lg">#}
-{#                                <h4 class="dropdown-header">Download Pintereso</h4>#}
-{#                                <div class="dropdown-divider"></div>#}
-{#                                <a href="#" class="dropdown-item">#}
-{#                                    <i class="fa fa-download"></i> Download HTML Template#}
-{#                                </a>#}
-{#                            </div>#}
-{#                        </li>#}
                     </ul>
                 </div>
             </div>

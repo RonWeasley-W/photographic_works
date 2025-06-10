@@ -21,5 +21,5 @@ from app01 import views
 
 urlpatterns = [
     path("photographic/home/", views.home),
-    path("photographic/add/", views.add),
+    path("photographic/update/", views.update),
 ]

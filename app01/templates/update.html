@@ -1,0 +1,217 @@
+
+{% extends 'layout.html' %}
+{% load utils %}
+{% block content %}
+    <div class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+        <div class="container mx-auto px-4 py-8">
+            <!-- 页面标题 -->
+            <div class="mb-8 text-center">
+                <h1 class="text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-gray-800 tracking-tight">
+                    <i class="fa fa-camera-retro mr-2 text-blue-600"></i>
+                    {% if is_uploaded %}分析结果{% else %}选择你上传的图片{% endif %}
+                </h1>
+                <p class="text-gray-600 mt-2 max-w-2xl mx-auto">
+                    {% if is_uploaded %}
+                        已为您的作品生成专业分析
+                    {% else %}
+                        上传高质量的摄影作品，我们将为你提供专业分析
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-xl overflow-hidden transition-all duration-500 hover:shadow-lg">
+                <div class="flex flex-col md:flex-row">
+                    <!-- 左侧表单区域 -->
+                    <div class="w-full md:w-1/2 p-6 md:p-8 bg-gradient-to-br from-white to-gray-50">
+                        <form method="post" enctype="multipart/form-data" class="space-y-6">
+                            {% csrf_token %}
+
+                            <!-- 图片上传区域 -->
+                            <div class="space-y-3">
+                                <label class="block text-sm font-medium text-gray-700">选择图片</label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 transform hover:scale-[1.01]">
+                                    <div class="space-y-1 text-center">
+                                        <i class="fa fa-cloud-upload text-gray-400 text-3xl mb-2 transition-transform duration-300 hover:scale-110"></i>
+                                        <div class="flex text-sm text-gray-600 justify-center">
+                                            <label for="myimg" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-700 focus-within:outline-none">
+                                                <input type="file" name="myimg">
+                                            </label>
+                                        </div>
+                                        <p class="text-xs text-gray-500">支持 PNG, JPG, GIF 等格式，建议尺寸不小于 1000x1000px</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fa fa-info-circle text-blue-500 mr-1.5"></i>
+                                    示例：上传一张高质量的人像或风景摄影作品
+                                </p>
+                            </div>
+
+                            <!-- 分类选择 -->
+                            <div class="space-y-3">
+                                <label class="block text-sm font-medium text-gray-700">选择分类</label>
+                                <div class="relative">
+                                    <select name="image_class" class="block w-full pl-3 pr-10 py-2.5 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg transition-all duration-300 appearance-none bg-white shadow-sm">
+                                        <option value="1" selected>人像摄影</option>
+                                        <option value="2">风光摄影</option>
+                                        <option value="3">纪实摄影</option>
+                                        <option value="4">静物摄影</option>
+                                        <option value="5">街头摄影</option>
+                                        <option value="6">野生动物摄影</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-gray-700">
+                                        <i class="fa fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-default">
+                                {% if is_uploaded %}重新上传{% else %}Submit{% endif %}
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- 右侧预览/分析区域 -->
+                    <div class="w-full md:w-1/2 bg-gradient-to-br from-gray-50 to-gray-100 p-6 md:p-8 border-t md:border-t-0 md:border-l border-gray-200">
+                        <!-- 图片预览/展示区域 -->
+                        <div class="mb-6 rounded-xl overflow-hidden shadow-lg bg-white h-[300px] md:h-[400px] flex items-center justify-center border-2 transition-all duration-300 transform hover:scale-[1.005]" id="preview-container">
+                            {% if is_uploaded %}
+                                <img src="{{ image.myimg.url }}" alt="{{ image.image_name }}" class="max-h-full max-w-full object-contain transition-opacity duration-500 opacity-100">
+                            {% else %}
+                                <!-- 添加隐藏类，初始隐藏默认预览图 -->
+                                <img id="preview-image" src="https://picsum.photos/seed/photography/800/1000" alt="上传的图片预览" class="max-h-full max-w-full object-contain transition-opacity duration-500 opacity-100 hidden">
+                            {% endif %}
+                        </div>
+
+                        <!-- 作品详情/分析区域 -->
+                        <div class="space-y-6" {% if not is_uploaded %}style="display: none;"{% endif %}>
+                            <!-- 作品标题和分类 -->
+                            <div class="border-b border-gray-200 pb-4">
+                                <h2 class="text-2xl font-bold text-gray-800">
+                                    {{ image.image_name|default:preview.title }}
+                                </h2>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    {{ image.get_image_class_display|default:preview.category }}
+                                </p>
+                            </div>
+
+                            <!-- 评分卡片 -->
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <div class="bg-white rounded-xl p-4 shadow-md border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-100">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-medium text-gray-500">技术评分</span>
+                                        <span class="text-lg font-bold text-blue-600">
+                                            {{ tech_rating|default:preview.tech_rating }}
+                                        </span>
+                                    </div>
+                                    <div class="mt-2 flex items-center">
+                                        <div class="flex">
+                                            {% with rating=tech_rating|default:preview.tech_rating|split:'/' %}
+                                                {% for i in "01234" %}
+                                                    {% if i|add:1 <= rating.0|float %}
+                                                        <i class="fa fa-star text-yellow-400"></i>
+                                                    {% elif i|add:0.5 <= rating.0|float %}
+                                                        <i class="fa fa-star-half-o text-yellow-400"></i>
+                                                    {% else %}
+                                                        <i class="fa fa-star-o text-yellow-400"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endwith %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white rounded-xl p-4 shadow-md border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-green-100">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-medium text-gray-500">创意评分</span>
+                                        <span class="text-lg font-bold text-green-600">
+                                            {{ creative_rating|default:preview.creative_rating }}
+                                        </span>
+                                    </div>
+                                    <div class="mt-2 flex items-center">
+                                        <div class="flex">
+                                            {% with rating=creative_rating|default:preview.creative_rating|split:'/' %}
+                                                {% for i in "01234" %}
+                                                    {% if i|add:1 <= rating.0|float %}
+                                                        <i class="fa fa-star text-yellow-400"></i>
+                                                    {% elif i|add:0.5 <= rating.0|float %}
+                                                        <i class="fa fa-star-half-o text-yellow-400"></i>
+                                                    {% else %}
+                                                        <i class="fa fa-star-o text-yellow-400"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endwith %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 详细分析卡片 -->
+                            <div class="space-y-4">
+                                <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-lg">
+                                    <div class="p-4 bg-blue-50 border-b border-blue-100">
+                                        <h3 class="font-semibold text-gray-800 flex items-center">
+                                            <i class="fa fa-sun-o text-blue-500 mr-2"></i> 曝光与光影
+                                        </h3>
+                                    </div>
+                                    <div class="p-5 text-sm text-gray-600">
+                                        <p>{{ image.image_exposure|default:preview.exposure }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- 其他分析卡片结构类似，替换对应字段 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 提示信息 -->
+            <div class="mt-8 bg-blue-50 border border-blue-100 rounded-lg p-4 max-w-3xl mx-auto">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-info-circle text-blue-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-blue-800">上传提示</h3>
+                        <div class="mt-2 text-sm text-blue-700 space-y-1">
+                            <p>• 支持 PNG, JPG, GIF 格式，建议尺寸≥1000x1000px</p>
+                            <p>• 分析结果将在上传后自动生成</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('myimg').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const previewImage = document.getElementById('preview-image');
+                const previewContainer = document.getElementById('preview-container');
+
+                if (file) {
+                    const reader = new FileReader();
+                    // 移除默认隐藏类，显示预览区域
+                    previewImage.classList.remove('hidden');
+                    previewImage.classList.add('opacity-0');
+                    previewContainer.classList.add('border-blue-300');
+                    previewContainer.classList.remove('border-gray-200');
+
+                    reader.onload = function(e) {
+                        setTimeout(() => {
+                            previewImage.src = e.target.result;
+                            previewImage.classList.remove('opacity-0');
+                            previewImage.classList.add('opacity-100');
+                        }, 300);
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    // 无文件时恢复默认预览图并隐藏
+                    previewImage.src = "https://picsum.photos/seed/photography/800/1000";
+                    previewImage.classList.add('hidden');
+                    previewContainer.classList.remove('border-blue-300');
+                    previewContainer.classList.add('border-gray-200');
+                }
+            });
+        </script>
+    </div>
+{% endblock %}
